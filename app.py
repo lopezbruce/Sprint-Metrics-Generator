@@ -84,16 +84,25 @@ sprint_data['sprint_year'] = sprint_data['First sprint'].str.extract(r'Q[1-4]S[1
 
 def parse_date_with_year(date_str, year):
     """
-    Parses a date string and appends the extracted year.
-    
+    Parses a date string and appends the extracted year. If the date string
+    or year is not valid, returns None.
+
     Args:
         date_str (str): Date string in the format 'mm/dd'.
         year (str): Year as a string.
     
     Returns:
-        datetime: The parsed datetime object.
+        datetime or None: The parsed datetime object if valid, else None.
     """
-    return datetime.strptime(f"{date_str}/{year}", '%m/%d/%Y')
+    # Check if year is 'nan' or date_str is not valid
+    if year == 'nan' or not date_str or '/' not in date_str:
+        return None
+    try:
+        return datetime.strptime(f"{date_str}/{year}", '%m/%d/%Y')
+    except ValueError:
+        # Return None if the date cannot be parsed
+        return None
+
 
 # Process sprints considering only initially planned stories
 sprint_data['sprint_range'] = sprint_data['First sprint'].str.extract(r'(\d{2}/\d{2} to \d{2}/\d{2})')
@@ -108,6 +117,9 @@ for sprint in unique_sprints:
     sprint_start, sprint_end = sprint.split(' to ')
     sprint_start_date = parse_date_with_year(sprint_start, sprint_year)
     sprint_end_date = parse_date_with_year(sprint_end, sprint_year)
+
+    if sprint_start_date is None or sprint_end_date is None:
+        continue
     
     if current_date >= sprint_start_date and current_date <= sprint_end_date:
         continue
