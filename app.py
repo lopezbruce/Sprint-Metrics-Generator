@@ -127,7 +127,7 @@ for sprint in unique_sprints:
     if sprint_start_date is None or sprint_end_date is None:
         continue
     
-    if current_date >= sprint_start_date and current_date <= sprint_end_date:
+    if current_date <= sprint_end_date:
         continue
     
     initially_planned_issues = sprint_data[(sprint_data['Created date'] <= sprint_start_date) & (sprint_data['sprint_range'] == sprint)]
