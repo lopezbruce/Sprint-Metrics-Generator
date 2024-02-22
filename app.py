@@ -124,14 +124,11 @@ for sprint in unique_sprints:
     # Pass True for is_end_date to correctly adjust the year if necessary
     sprint_end_date = parse_date_with_year(sprint_end, sprint_year, is_end_date=True)
 
-    print(sprint_start_date)
-    print(sprint_end_date)
-
     # Skip this sprint if either date is None
     if sprint_start_date is None or sprint_end_date is None:
         continue
     
-    if current_date >= sprint_start_date and current_date <= sprint_end_date:
+    if current_date <= sprint_end_date:
         continue
     
     initially_planned_issues = sprint_data[(sprint_data['Created date'] <= sprint_start_date) & (sprint_data['sprint_range'] == sprint)]
