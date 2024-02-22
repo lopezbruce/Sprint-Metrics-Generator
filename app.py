@@ -114,10 +114,19 @@ timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
 for sprint in unique_sprints:
     sprint_year = sprint_data[sprint_data['sprint_range'] == sprint]['sprint_year'].iloc[0]
+    # Check if sprint_year is 'nan' and attempt to derive the year from another source
+    if sprint_year == 'nan':
+        # Use the year from the "Created date"
+        sprint_year = str(sprint_data[sprint_data['sprint_range'] == sprint]['Created date'].dt.year.iloc[0])
+    
     sprint_start, sprint_end = sprint.split(' to ')
     sprint_start_date = parse_date_with_year(sprint_start, sprint_year)
     sprint_end_date = parse_date_with_year(sprint_end, sprint_year)
 
+    print(sprint_start_date)
+    print(sprint_end_date)
+
+    # Skip this sprint if either date is None
     if sprint_start_date is None or sprint_end_date is None:
         continue
     
