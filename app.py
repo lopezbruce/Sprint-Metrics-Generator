@@ -123,9 +123,6 @@ for sprint in unique_sprints:
     sprint_start_date = parse_date_with_year(sprint_start, sprint_year)
     sprint_end_date = parse_date_with_year(sprint_end, sprint_year)
 
-    print(sprint_start_date)
-    print(sprint_end_date)
-
     # Skip this sprint if either date is None
     if sprint_start_date is None or sprint_end_date is None:
         continue
