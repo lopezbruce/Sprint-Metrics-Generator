@@ -82,27 +82,29 @@ def calculate_working_days(start_date, end_date, member_id=None, member_location
 # Process sprints considering only initially planned stories
 sprint_data['sprint_year'] = sprint_data['First sprint'].str.extract(r'Q[1-4]S[1-4](\d{4})').astype(str)
 
-def parse_date_with_year(date_str, year):
+def parse_date_with_year(date_str, year, is_end_date=False):
     """
-    Parses a date string and appends the extracted year. If the date string
-    or year is not valid, returns None.
-
+    Parses a date string and appends the extracted year. Adjusts the year for end dates that roll over to the next year.
+    
     Args:
         date_str (str): Date string in the format 'mm/dd'.
         year (str): Year as a string.
+        is_end_date (bool): Flag to indicate if the date is an end date, to adjust year if necessary.
     
     Returns:
         datetime or None: The parsed datetime object if valid, else None.
     """
-    # Check if year is 'nan' or date_str is not valid
     if year == 'nan' or not date_str or '/' not in date_str:
         return None
     try:
+        # Adjust the year for end dates if necessary
+        if is_end_date:
+            month = int(date_str.split('/')[0])
+            if month == 1:  # Assuming the sprint starts in December and rolls over to January
+                year = str(int(year) + 1)
         return datetime.strptime(f"{date_str}/{year}", '%m/%d/%Y')
     except ValueError:
-        # Return None if the date cannot be parsed
         return None
-
 
 # Process sprints considering only initially planned stories
 sprint_data['sprint_range'] = sprint_data['First sprint'].str.extract(r'(\d{2}/\d{2} to \d{2}/\d{2})')
@@ -114,20 +116,22 @@ timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
 for sprint in unique_sprints:
     sprint_year = sprint_data[sprint_data['sprint_range'] == sprint]['sprint_year'].iloc[0]
-    # Check if sprint_year is 'nan' and attempt to derive the year from another source
     if sprint_year == 'nan':
-        # Use the year from the "Created date"
         sprint_year = str(sprint_data[sprint_data['sprint_range'] == sprint]['Created date'].dt.year.iloc[0])
-    
+
     sprint_start, sprint_end = sprint.split(' to ')
     sprint_start_date = parse_date_with_year(sprint_start, sprint_year)
-    sprint_end_date = parse_date_with_year(sprint_end, sprint_year)
+    # Pass True for is_end_date to correctly adjust the year if necessary
+    sprint_end_date = parse_date_with_year(sprint_end, sprint_year, is_end_date=True)
+
+    print(sprint_start_date)
+    print(sprint_end_date)
 
     # Skip this sprint if either date is None
     if sprint_start_date is None or sprint_end_date is None:
         continue
     
-    if current_date <= sprint_end_date:
+    if current_date >= sprint_start_date and current_date <= sprint_end_date:
         continue
     
     initially_planned_issues = sprint_data[(sprint_data['Created date'] <= sprint_start_date) & (sprint_data['sprint_range'] == sprint)]
